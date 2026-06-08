@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — SnapGram{% endblock %}
+{% block content %}
+<div class="edit-profile-page">
+  <h2 class="page-title">Edit Profile</h2>
+  <form method="post" enctype="multipart/form-data" class="edit-form">
+    {% csrf_token %}
+    {% if messages %}{% for msg in messages %}<div class="form-success">{{ msg }}</div>{% endfor %}{% endif %}
+
+    <div class="avatar-edit">
+      {% if user.profile.avatar %}
+      <img src="{{ user.profile.avatar.url }}" id="avatar-preview" class="avatar-preview">
+      {% else %}
+      <div class="avatar-preview avatar-preview--placeholder" id="avatar-preview-placeholder">{{ user.username|first|upper }}</div>
+      {% endif %}
+      <label for="avatar-input" class="btn-outline-sm" style="cursor:pointer">Change Photo</label>
+      <input type="file" name="avatar" id="avatar-input" accept="image/*" style="display:none">
+    </div>
+
+    <div class="form-group">
+      <label>Full Name</label>
+      <input type="text" name="first_name" value="{{ user.first_name }}" class="form-input" placeholder="First name">
+      <input type="text" name="last_name" value="{{ user.last_name }}" class="form-input" placeholder="Last name" style="margin-top:8px">
+    </div>
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" value="{{ user.username }}" class="form-input" disabled style="opacity:.5">
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" name="email" value="{{ user.email }}" class="form-input">
+    </div>
+    <div class="form-group">
+      <label>Bio</label>
+      <textarea name="bio" class="form-input" rows="3" maxlength="300" placeholder="Write a short bio…">{{ user.profile.bio }}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Location</label>
+      <input type="text" name="location" value="{{ user.profile.location }}" class="form-input" placeholder="City, Country">
+    </div>
+    <div class="form-group">
+      <label>Website</label>
+      <input type="url" name="website" value="{{ user.profile.website }}" class="form-input" placeholder="https://...">
+    </div>
+
+    <div class="form-actions">
+      <a href="/profile/{{ user.username }}/" class="btn-outline">Cancel</a>
+      <button type="submit" class="btn-primary">Save</button>
+    </div>
+  </form>
+</div>
+
+<script>
+document.getElementById('avatar-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    let preview = document.getElementById('avatar-preview');
+    if (!preview) {
+      preview = document.createElement('img');
+      preview.id = 'avatar-preview';
+      preview.className = 'avatar-preview';
+      const placeholder = document.getElementById('avatar-preview-placeholder');
+      if (placeholder) placeholder.replaceWith(preview);
+    }
+    preview.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+{% endblock %}

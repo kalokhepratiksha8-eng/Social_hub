@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}SnapGram — Sign Up{% endblock %}
+{% block content %}
+<div class="auth-container">
+  <div class="auth-card">
+    <div class="auth-logo">SnapGram</div>
+    <p class="auth-tagline">Sign up to see photos from your friends.</p>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="form-error">{{ msg }}</div>
+    {% endfor %}
+    {% endif %}
+
+    <form method="post" class="auth-form">
+      {% csrf_token %}
+      <input type="text" name="full_name" placeholder="Full Name" class="form-input" autocomplete="name">
+      <input type="email" name="email" placeholder="Email address" required class="form-input" autocomplete="email">
+      <input type="text" name="username" placeholder="Username" required class="form-input" autocomplete="username">
+      <input type="password" name="password" placeholder="Password" required class="form-input" autocomplete="new-password">
+      <input type="password" name="password2" placeholder="Confirm Password" required class="form-input" autocomplete="new-password">
+      <button type="submit" class="btn-primary btn-full">Sign up</button>
+    </form>
+    <p class="auth-terms">By signing up, you agree to our Terms and Privacy Policy.</p>
+  </div>
+
+  <div class="auth-alt">
+    Have an account? <a href="/login/">Log in</a>
+  </div>
+</div>
+{% endblock %}

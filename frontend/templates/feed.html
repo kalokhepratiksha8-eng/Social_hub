@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}SnapGram — Feed{% endblock %}
+{% block content %}
+
+{% if stories %}
+<div class="stories-bar">
+  <div class="stories-scroll">
+    <div class="story-item">
+      <a href="/create/" class="story-ring story-add">
+        <div class="story-circle">
+          {% if user.profile.avatar %}<img src="{{ user.profile.avatar.url }}" alt="">
+          {% else %}<span class="story-initial">{{ user.username|first|upper }}</span>{% endif %}
+        </div>
+        <div class="story-add-icon">+</div>
+      </a>
+      <span class="story-name">Your story</span>
+    </div>
+    {% for story in stories %}
+    <div class="story-item">
+      <div class="story-ring story-ring--active">
+        <div class="story-circle">
+          {% if story.author.profile.avatar %}<img src="{{ story.author.profile.avatar.url }}" alt="">
+          {% else %}<span class="story-initial">{{ story.author.username|first|upper }}</span>{% endif %}
+        </div>
+      </div>
+      <span class="story-name">{{ story.author.username }}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="feed">
+  {% for post in posts %}
+  <article class="post-card">
+    <div class="post-header">
+      <a href="/profile/{{ post.author.username }}/" class="post-author-link">
+        <div class="post-avatar">
+          {% if post.author.profile.avatar %}
+          <img src="{{ post.author.profile.avatar.url }}" alt="{{ post.author.username }}">
+          {% else %}
+          <span>{{ post.author.username|first|upper }}</span>
+          {% endif %}
+        </div>
+        <div class="post-author-info">
+          <span class="post-username">{{ post.author.username }}</span>
+          {% if post.author.profile.location %}<span class="post-location">{{ post.author.profile.location }}</span>{% endif %}
+        </div>
+      </a>
+      {% if post.author == user %}
+      <form method="post" action="/post/{{ post.id }}/delete/" style="margin-left:auto">
+        {% csrf_token %}
+        <button type="submit" class="btn-icon" onclick="return confirm('Delete this post?')" title="Delete">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+
+    <a href="/post/{{ post.id }}/">
+      <div class="post-image-wrap">
+        <img src="{{ post.image.url }}" alt="{{ post.caption|truncatechars:50 }}" class="post-image" loading="lazy">
+      </div>
+    </a>
+
+    <div class="post-actions">
+      <button class="btn-icon like-btn {% if post.id in liked_post_ids %}liked{% endif %}"
+              data-post-id="{{ post.id }}" data-csrf="{{ csrf_token }}" aria-label="Like">
+        <svg class="heart-icon" width="24" height="24" fill="{% if post.id in liked_post_ids %}#e24b4a{% else %}none{% endif %}" stroke="{% if post.id in liked_post_ids %}#e24b4a{% else %}currentColor{% endif %}" stroke-width="2" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </button>
+      <a href="/post/{{ post.id }}/" class="btn-icon" aria-label="Comment">
+        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </a>
+      <span style="flex:1"></span>
+    </div>
+
+    <div class="post-likes">
+      <span class="likes-count" id="likes-{{ post.id }}">{{ post.get_likes_count }}</span> like{% if post.get_likes_count != 1 %}s{% endif %}
+    </div>
+
+    {% if post.caption %}
+    <div class="post-caption">
+      <a href="/profile/{{ post.author.username }}/" class="post-caption-username">{{ post.author.username }}</a>
+      {{ post.caption }}
+    </div>
+    {% endif %}
+
+    {% if post.get_comments_count > 0 %}
+    <a href="/post/{{ post.id }}/" class="view-comments">View all {{ post.get_comments_count }} comment{% if post.get_comments_count != 1 %}s{% endif %}</a>
+    {% endif %}
+
+    <div class="comment-add-row">
+      <form method="post" action="/post/{{ post.id }}/" class="inline-comment-form" data-post-id="{{ post.id }}">
+        {% csrf_token %}
+        <input type="text" name="comment" placeholder="Add a comment…" class="comment-input" autocomplete="off">
+        <button type="submit" class="comment-submit">Post</button>
+      </form>
+    </div>
+
+    <div class="post-time">{{ post.created_at|timesince }} ago</div>
+  </article>
+  {% empty %}
+  <div class="empty-feed">
+    <div class="empty-state-icon"><svg width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div>
+    <h3>Your feed is empty</h3>
+    <p>Follow people to see their posts here, or <a href="/explore/">explore</a> to discover new content.</p>
+    <a href="/explore/" class="btn-primary">Explore</a>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

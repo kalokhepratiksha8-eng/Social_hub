@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}{{ profile_user.username }} — SnapGram{% endblock %}
+{% block content %}
+<div class="profile-page">
+  <div class="profile-header">
+    <div class="profile-avatar-wrap">
+      {% if profile_user.profile.avatar %}
+      <img src="{{ profile_user.profile.avatar.url }}" alt="{{ profile_user.username }}" class="profile-avatar">
+      {% else %}
+      <div class="profile-avatar profile-avatar--placeholder">{{ profile_user.username|first|upper }}</div>
+      {% endif %}
+    </div>
+
+    <div class="profile-info">
+      <div class="profile-top-row">
+        <h2 class="profile-username">{{ profile_user.username }}</h2>
+        {% if profile_user == user %}
+        <a href="/edit-profile/" class="btn-outline-sm">Edit Profile</a>
+        <a href="/logout/" class="btn-outline-sm">Log out</a>
+        {% else %}
+        <button class="follow-btn {% if is_following %}following{% endif %}"
+                id="follow-btn-{{ profile_user.username }}"
+                data-username="{{ profile_user.username }}"
+                data-csrf="{{ csrf_token }}">
+          {% if is_following %}Following{% else %}Follow{% endif %}
+        </button>
+        {% endif %}
+      </div>
+
+      <div class="profile-stats-row">
+        <div class="profile-stat">
+          <span class="profile-stat-num">{{ posts_count }}</span>
+          <span class="profile-stat-label">posts</span>
+        </div>
+        <div class="profile-stat">
+          <span class="profile-stat-num" id="followers-count">{{ followers_count }}</span>
+          <span class="profile-stat-label">followers</span>
+        </div>
+        <div class="profile-stat">
+          <span class="profile-stat-num">{{ following_count }}</span>
+          <span class="profile-stat-label">following</span>
+        </div>
+      </div>
+
+      <div class="profile-bio-section">
+        {% if profile_user.get_full_name %}
+        <div class="profile-full-name">{{ profile_user.get_full_name }}</div>
+        {% endif %}
+        {% if profile_user.profile.bio %}<p class="profile-bio">{{ profile_user.profile.bio }}</p>{% endif %}
+        {% if profile_user.profile.location %}
+        <p class="profile-location">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="display:inline;vertical-align:-1px;margin-right:3px"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          {{ profile_user.profile.location }}
+        </p>
+        {% endif %}
+        {% if profile_user.profile.website %}<a href="{{ profile_user.profile.website }}" class="profile-website" target="_blank">{{ profile_user.profile.website }}</a>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-posts-grid">
+    {% for post in posts %}
+    <a href="/post/{{ post.id }}/" class="grid-post">
+      <img src="{{ post.image.url }}" alt="{{ post.caption|truncatechars:30 }}" loading="lazy">
+      <div class="grid-post-overlay">
+        <span>
+          <svg width="16" height="16" fill="white" stroke="white" stroke-width="2" viewBox="0 0 24 24" style="display:inline;vertical-align:-2px;margin-right:3px"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          {{ post.get_likes_count }}
+        </span>
+        <span>
+          <svg width="16" height="16" fill="none" stroke="white" stroke-width="2" viewBox="0 0 24 24" style="display:inline;vertical-align:-2px;margin-right:3px"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          {{ post.get_comments_count }}
+        </span>
+      </div>
+    </a>
+    {% empty %}
+    <div class="profile-empty" style="grid-column:1/-1;text-align:center;padding:3rem">
+      <div class="empty-state-icon">
+        <svg width="52" height="52" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+          <circle cx="8.5" cy="8.5" r="1.5"/>
+          <polyline points="21 15 16 10 5 21"/>
+        </svg>
+      </div>
+      <p style="margin:12px 0 16px;color:var(--text-muted)">No posts yet.</p>
+      {% if profile_user == user %}<a href="/create/" class="btn-primary">Share your first photo</a>{% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
